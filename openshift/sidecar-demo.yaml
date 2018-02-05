@@ -39,7 +39,7 @@ objects:
           - -c
           image: docker.io/centos:7
           imagePullPolicy: Always
-          name: logger
+          name: log-producer
           resources: {}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
