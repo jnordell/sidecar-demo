@@ -30,13 +30,15 @@ This demo was build using the [Red Hat Container Development Kit](https://develo
 
 The template will deploy one pod with the two relevant containers. As endpoint for the log a simple elasticsearch/kibana deployment will be done in the same project. The output plugin can be configured in the configurationMap.
 
+The elasticsearch and kibana containers used in this demo are not specific to OpenShift and hence needs some extra privileged's to be able to run.
+
 ## Setup
 
 1. Create a project in OpenShift
 
         $ oc new-project sidecar-demo
 
-2. Add the default service account to the SCC anyuid. This is needed as both elasticsearch and kibana needs to set users by them selfs.
+2. Add the default service account to the SCC anyuid. This is needed as both the elasticsearch and kibana container images sets user id.
 
         $ oc adm policy add-scc-to-user anuid system:serviceaccount:sidecar-demo:default
 
@@ -52,18 +54,20 @@ The template will deploy one pod with the two relevant containers. As endpoint f
 
         $ oc expose svc/kibana
 
-Wait for both elasticsearch and kibana to finish deploying before continue with the next step.
+        Wait for both elasticsearch and kibana to finish deploying before continue with the next step.
 
 6. Process the template 
 
         $ oc process -f https://raw.githubusercontent.com/jnordell/sidecar-demo/master/openshift/sidecar-demo.yaml | oc create -f-
     
-    This will create a deploymentconfiguration describing a pod with two containers. The container named "log-producer" will write a date entry to /mnt/logdir/logfile.txt every five seconds. The second container named "fluentbit-sidecar" will run [fluentbit](http://fluentbit.io) and use the tail plugin to read the contents of the file logfile.txt. Both containers shares the volume called "logdir" of the type emptyDir and while the first container is able to write to the file the second will mount it read-only. 
+    This will create a deploymentConfig describing the pod with two containers. The container named "log-producer" will write a date entry to /mnt/logdir/logfile.txt every five seconds. The second container named "fluentbit-sidecar" will run [fluentbit](http://fluentbit.io) and use the tail plugin to read the contents of the file logfile.txt. Both containers shares the volume called "logdir" of the type emptyDir and while the first container is able to write to the file the second will mount it read-only. 
 
     The included configuration will send logs to the local elasticsearch installation.
 
-7. When the pod is deployed and running access the kibana route.
+7. Access the kibana.
 
-        When accessing kibana for the first time it will ask to create an index pattern. Do not change anything and click the "Create" button. This will create an index pattern called logstash-*. Once this has been created select "Discover" in the left menu.
+    When accessing kibana with a browser for the first time it will ask to create an index pattern. Keep the suggested defaults and click the "Create" button. This will create an index pattern called logstash-*. 
+    
+    Once the index pattern has been created select "Discover" in the left menu to display the logs.
 
-        ![Kibana](https://github.com/jnordell/sidecar-demo/blob/master/docs/images/kibana.png?raw=true)
+![Kibana](https://github.com/jnordell/sidecar-demo/blob/master/docs/images/kibana.png?raw=true)
