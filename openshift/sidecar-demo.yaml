@@ -1,32 +1,20 @@
 apiVersion: v1
 kind: Template
 metadata:
-  creationTimestamp: null
   name: sidecar-demo.yaml
 objects:
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
-    creationTimestamp: null
-    generation: 1
     name: sidecar-demo
   spec:
-    replicas: 0
+    replicas: 1
     selector:
       app: sidecar-demo
     strategy:
-      activeDeadlineSeconds: 21600
-      resources: {}
-      rollingParams:
-        intervalSeconds: 1
-        maxSurge: 25%
-        maxUnavailable: 25%
-        timeoutSeconds: 600
-        updatePeriodSeconds: 1
       type: Rolling
     template:
       metadata:
-        creationTimestamp: null
         labels:
           app: sidecar-demo
       spec:
@@ -40,29 +28,19 @@ objects:
           image: docker.io/centos:7
           imagePullPolicy: Always
           name: log-producer
-          resources: {}
-          terminationMessagePath: /dev/termination-log
-          terminationMessagePolicy: File
           volumeMounts:
           - mountPath: /mnt/logdir
             name: logdir
         - image: docker.io/jnordell/fluentbit-sidecar
           imagePullPolicy: Always
           name: fluentbit-sidecar
-          resources: {}
-          terminationMessagePath: /dev/termination-log
-          terminationMessagePolicy: File
           volumeMounts:
           - mountPath: /mnt/logdir
             name: logdir
             readOnly: true
           - mountPath: /fluent-bit/etc/
             name: fluentbit-config
-        dnsPolicy: ClusterFirst
         restartPolicy: Always
-        schedulerName: default-scheduler
-        securityContext: {}
-        terminationGracePeriodSeconds: 30
         volumes:
         - emptyDir: {}
           name: logdir
@@ -70,8 +48,8 @@ objects:
             defaultMode: 420
             name: fluent-bit-config
           name: fluentbit-config
-    test: false
-    triggers: []
+    triggers:
+      - type: ConfigChange
 - apiVersion: v1
   data:
     fluent-bit.conf: |-
@@ -93,8 +71,8 @@ objects:
       [OUTPUT]
           Name            es
           Match           *
-          Host            elasticsearch-logserver.192.168.99.100.nip.io
-          Port            80
+          Host            elasticsearch.sidecar-demo.svc
+          Port            9200
           Logstash_Format On
           Retry_Limit     False
     parsers.conf: |
