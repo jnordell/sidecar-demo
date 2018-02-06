@@ -40,7 +40,7 @@ The elasticsearch and kibana containers used in this demo are not specific to Op
 
 2. Add the default service account to the SCC anyuid. This is needed as both the elasticsearch and kibana container images sets user id.
 
-        $ oc adm policy add-scc-to-user anuid system:serviceaccount:sidecar-demo:default
+        $ oc adm policy add-scc-to-user anyuid system:serviceaccount:sidecar-demo:default
 
 3. Create an ElasticSearch instance
 
